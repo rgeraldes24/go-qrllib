@@ -132,6 +132,11 @@ func (w *Wallet) GetMnemonic() string {
 	return mnemonic
 }
 
+func (w *Wallet) GetRawPK() []byte {
+	pk := w.d.GetPK()
+	return pk[:]
+}
+
 func (w *Wallet) GetPK() PK {
 	return w.d.GetPK()
 }
