@@ -140,8 +140,8 @@ func (w *Wallet) GetSK() [SKSize]uint8 {
 	return w.d.GetSK()
 }
 
-func (w *Wallet) GetDescriptor() Descriptor {
-	return w.desc
+func (w *Wallet) GetDescriptor() descriptor.Descriptor {
+	return w.desc.ToDescriptor()
 }
 
 func (w *Wallet) GetAddress() [common.AddressSize]uint8 {
