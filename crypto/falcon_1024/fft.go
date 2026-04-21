@@ -26,13 +26,32 @@ func fpcDiv(aRe, aIm, bRe, bIm fpr) (fpr, fpr) {
 	return fpctDRe, fpctDIm
 }
 
-func polyInvNorm2FFT(dst, f, g fprPoly) {}
+func polyInvNorm2FFT(d, a, b fprPoly) {
+	for u := range hn {
+		aRe := a[u]
+		aIm := a[u+hn]
+		bRe := b[u]
+		bIm := b[u+hn]
+		d[u] = fprInv(fprAdd(
+			fprAdd(fprSqr(aRe), fprSqr(aIm)),
+			fprAdd(fprSqr(bRe), fprSqr(bIm)),
+		))
+	}
+}
 
-func polyAdjFFT(a fprPoly) {}
+func polyAdjFFT(a fprPoly) {
+	for u := (polyDegree >> 1); u < polyDegree; u++ {
+		a[u] = fprNeg(a[u])
+	}
+}
 
-func polyMulAutoAdjFFT(a, b fprPoly) {}
+func polyMulAutoAdjFFT(a, b fprPoly) {
+	// TODO(rgeraldes24)
+}
 
-func polyMulConst(a fprPoly, x fpr) {}
+func polyMulConst(a fprPoly, x fpr) {
+	// TODO(rgeraldes24)
+}
 
 func fft(f fprPoly) {
 	t := polyDegree >> 1

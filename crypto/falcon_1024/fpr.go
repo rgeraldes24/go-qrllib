@@ -1,10 +1,10 @@
 package falcon
 
 const (
-	fprP2       = 0.001953125
-	fprQ    fpr = 12289
+	fprP2       fpr = 0.001953125
+	fprQ        fpr = 12289
 	fprBnormMax fpr = 16822.4121
-	fprZero fpr = 0
+	fprZero     fpr = 0
 )
 
 var fprGmTab = [...]fpr{
@@ -524,30 +524,11 @@ var fprGmTab = [...]fpr{
 
 type fpr float64
 
-func fprAdd(x, y fpr) fpr {
-	return 0
-}
-
-func fprSub(x, y fpr) fpr {
-	return 0
-}
-
-func fprMul(x, y fpr) fpr {
-	return 0
-}
-
-func fprNeg(x fpr) fpr {
-	return 0
-}
-
-func fprInv(x fpr) fpr {
-	return 0
-}
-
-func fprSqr(x fpr) fpr {
-	return 0
-}
-
-func fprLt(x, y fpr) bool {
-	return false
-}
+func fprAdd(x, y fpr) fpr { return x + y }
+func fprSub(x, y fpr) fpr { return x - y }
+func fprMul(x, y fpr) fpr { return x * y }
+func fprNeg(x fpr) fpr    { return -x }
+func fprSqr(x fpr) fpr    { return x * x }
+func fprInv(x fpr) fpr    { return 1 / x }
+func fprLt(x, y fpr) bool { return x < y }
+func fprOf(i int32) fpr   { return fpr(i) }
