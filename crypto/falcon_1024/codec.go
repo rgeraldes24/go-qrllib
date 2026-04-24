@@ -39,7 +39,7 @@ var (
 	ErrTrimDecodeForbiddenValue        = errors.New("trim input contains a forbidden value")
 )
 
-func modQEncode(dst []byte, x coeffPoly) (int, error) {
+func modQEncode(dst []byte, x mqPoly) (int, error) {
 	if len(x) != polyDegree {
 		return 0, fmt.Errorf("modQEncode: %w", ErrModQEncodeWrongCoefficientCount)
 	}
@@ -75,12 +75,12 @@ func modQEncode(dst []byte, x coeffPoly) (int, error) {
 	return written, nil
 }
 
-func modQDecode(src []byte) (coeffPoly, int, error) {
+func modQDecode(src []byte) (mqPoly, int, error) {
 	if len(src) < modQEncodedSize {
 		return nil, 0, fmt.Errorf("modQDecode: %w", ErrModQDecodeInputTooShort)
 	}
 
-	out := make(coeffPoly, polyDegree)
+	out := make(mqPoly, polyDegree)
 	var acc uint32
 	var accLen int
 	written := 0
@@ -94,7 +94,7 @@ func modQDecode(src []byte) (coeffPoly, int, error) {
 			if w >= modulusQ {
 				return nil, 0, fmt.Errorf("modQDecode: %w", ErrModQDecodeCoefficientOutOfRange)
 			}
-			out[written] = int32(w)
+			out[written] = uint32(w)
 			written++
 		}
 	}

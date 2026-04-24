@@ -27,16 +27,12 @@ func hashToPointVartime(sc sha3.ShakeHash) (coeffPoly, error) {
 				w -= modulusQ
 			}
 			out[written] = int32(w)
+			written++
 			n--
 		}
 	}
 
 	return out, nil
-}
-
-func hashToPointCT(sc sha3.ShakeHash, tmp []uint16) (coeffPoly, error) {
-	// TODO
-	return nil, nil
 }
 
 func isShort(s1, s2 coeffPoly) bool {

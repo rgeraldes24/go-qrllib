@@ -412,13 +412,36 @@ func toNTTMonty(h mqPoly) {
 }
 
 func verifyRaw(c0 coeffPoly, s2 coeffPoly, h mqPoly, tmp mqPoly) bool {
-	// TODO
-	return false
+	var sqn uint32
+	var ng uint32
+
+	for i := range polyDegree {
+		z := s2[i]
+		sqn += uint32(z) * uint32(z)
+		ng |= sqn
+		tmp[i] = mqConvSmall(z)
+	}
+
+	mqNTT(tmp)
+	mqPolyMontyMulNTT(tmp, h)
+	mqINTT(tmp)
+
+	for i := range polyDegree {
+		z := int32(tmp[i])
+		if z > modulusQ/2 {
+			z -= modulusQ
+		}
+
+		w := c0[i] - z
+		sqn += uint32(w) * uint32(w)
+		ng |= sqn
+	}
+
+	sqn |= -(ng >> 31)
+	return sqn <= l2bound
 }
 
-func computePublic(f, g coeffPoly, tmp mqPoly) (mqPoly, error) {
-	h := make(mqPoly, polyDegree)
-
+func computePublic(h mqPoly, f, g coeffPoly, tmp mqPoly) error {
 	for i := range polyDegree {
 		tmp[i] = mqConvSmall(f[i])
 		h[i] = mqConvSmall(g[i])
@@ -429,17 +452,17 @@ func computePublic(f, g coeffPoly, tmp mqPoly) (mqPoly, error) {
 
 	for i := range polyDegree {
 		if tmp[i] == 0 {
-			return nil, ErrComputePublicDivisionByZero
+			return ErrComputePublicDivisionByZero
 		}
 		h[i] = mqDiv12289(h[i], tmp[i])
 	}
 
 	mqINTT(h)
 
-	return h, nil
+	return nil
 }
 
-func completePrivate(f, g, F coeffPoly, tmp mqPoly) (coeffPoly, error) {
+func completePrivate(f, g, ntruF coeffPoly, tmp mqPoly) (coeffPoly, error) {
 	t2 := make(mqPoly, polyDegree)
 	for i := range tmp {
 		t2[i] = tmp[i] + polyDegree
@@ -477,9 +500,4 @@ func completePrivate(f, g, F coeffPoly, tmp mqPoly) (coeffPoly, error) {
 	}
 
 	return G, nil
-}
-
-func verifyRecover(c0, s1, s2 coeffPoly, tmp mqPoly) (mqPoly, bool) {
-	// TODO
-	return nil, false
 }

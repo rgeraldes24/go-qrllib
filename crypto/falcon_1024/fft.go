@@ -46,11 +46,16 @@ func polyAdjFFT(a fprPoly) {
 }
 
 func polyMulAutoAdjFFT(a, b fprPoly) {
-	// TODO(rgeraldes24)
+	for u := range hn {
+		a[u] = fprMul(a[u], b[u])
+		a[u+hn] = fprMul(a[u+hn], b[u])
+	}
 }
 
 func polyMulConst(a fprPoly, x fpr) {
-	// TODO(rgeraldes24)
+	for u := range polyDegree {
+		a[u] = fprMul(a[u], x)
+	}
 }
 
 func fft(f fprPoly) {
