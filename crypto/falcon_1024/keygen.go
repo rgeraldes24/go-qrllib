@@ -1025,7 +1025,7 @@ func rejectByOrthogonalNorm(f, g coeffPoly, tmp []fpr) bool {
 	return !fprLt(bnorm, fprBnormMax)
 }
 
-func keygen(rng sha3.ShakeHash, wk *keygenWorkspace) (ExpandedPrivateKey, decodedPublicKey, error) {
+func keygen(rng sha3.ShakeHash) (ExpandedPrivateKey, decodedPublicKey, error) {
 	for {
 		f := make(coeffPoly, polyDegree)
 		g := make(coeffPoly, polyDegree)
@@ -1042,19 +1042,19 @@ func keygen(rng sha3.ShakeHash, wk *keygenWorkspace) (ExpandedPrivateKey, decode
 			continue
 		}
 
-		if rejectByOrthogonalNorm(f, g, wk.fpr) {
+		if rejectByOrthogonalNorm(f, g) {
 			continue
 		}
 
 		h := make(mqPoly, polyDegree)
-		if err := computePublic(h, f, g, wk.mq); err != nil {
+		if err := computePublic(h, f, g); err != nil {
 			continue
 		}
 
 		// TODO: error or bool
 		ntruF := make(coeffPoly, polyDegree)
 		ntruG := make(coeffPoly, polyDegree)
-		if err := solveNTRU(ntruF, ntruG, f, g, wk.fpr); err != nil {
+		if err := solveNTRU(ntruF, ntruG, f, g); err != nil {
 			continue
 		}
 

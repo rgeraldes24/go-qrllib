@@ -18,13 +18,9 @@ const (
 	privateKeySmallCoeffBits = 5
 	privateKeyNtruFBits      = 8
 
-	publicKeyHeaderBase       byte = 0x00
-	signaturePaddedHeaderBase byte = 0x30
-	privateKeyHeaderBase      byte = 0x50
-
-	publicKeyHeader       byte = publicKeyHeaderBase + logPolyDegree
-	signaturePaddedHeader byte = signaturePaddedHeaderBase + logPolyDegree
-	privateKeyHeader      byte = privateKeyHeaderBase + logPolyDegree
+	publicKeyHeader       byte = 0x00 + logPolyDegree
+	signaturePaddedHeader byte = 0x30 + logPolyDegree
+	privateKeyHeader      byte = 0x50 + logPolyDegree
 
 	keygenTemp10Fpr  = 3584
 	signDynTemp10Fpr = 9984
@@ -45,13 +41,30 @@ var (
 
 type PaddedSignature [PaddedSignatureSize]byte
 
+type ExpandedPrivateKey struct {
+	b00  fprPoly
+	b01  fprPoly
+	b10  fprPoly
+	b11  fprPoly
+	tree fprPoly
+}
+
+func (epk *ExpandedPrivateKey) Sign(random io.Reader, message []byte) (PaddedSignature, error) {
+	return SignExpanded(random, epk, message)
+}
+
 type PrivateKey [PrivateKeySize]byte
 
-type ExpandedPrivateKey struct {
-	f     coeffPoly
-	g     coeffPoly
-	ntruF coeffPoly
-	ntruG coeffPoly
+func (priv PrivateKey) Public() (PublicKey, error) {
+	return makePublic(priv)
+}
+
+func (priv PrivateKey) Sign(random io.Reader, message []byte) (PaddedSignature, error) {
+	return Sign(random, priv, message)
+}
+
+func (priv PrivateKey) Expand() (*ExpandedPrivateKey, error) {
+	return expandPriv(priv)
 }
 
 type PublicKey [PublicKeySize]byte
@@ -60,10 +73,17 @@ type decodedPublicKey struct{ h mqPoly }
 
 type Seed [SeedSize]byte
 
-func NewSeed() (Seed, error) {
+func NewSeed(random io.Reader) (Seed, error) {
+	if random == nil {
+		random = rand.Reader
+	}
+
 	var seed Seed
-	_, err := rand.Read(seed[:])
-	return seed, err
+	if _, err := io.ReadFull(random, seed[:]); err != nil {
+		return Seed{}, err
+	}
+
+	return seed, nil
 }
 
 func SeedFromBytes(src []byte) (Seed, error) {
@@ -75,28 +95,44 @@ func SeedFromBytes(src []byte) (Seed, error) {
 	return seed, nil
 }
 
-func KeyGen() (PrivateKey, PublicKey, error) {
-	seed, err := NewSeed()
+func GenerateKey(random io.Reader) (PublicKey, PrivateKey, error) {
+	seed, err := NewSeed(random)
 	if err != nil {
-		return PrivateKey{}, PublicKey{}, err
+		return PublicKey{}, PrivateKey{}, err
 	}
 
 	sk, pk, err := keyGenFromSeed(seed)
 	if err != nil {
-		return PrivateKey{}, PublicKey{}, err
+		return PublicKey{}, PrivateKey{}, err
 	}
 
-	return sk, pk, nil
+	return pk, sk, nil
 }
 
-func KeyGenFromSeed(seed Seed) (PrivateKey, PublicKey, error) {
-	sk, pk, err := keyGenFromSeed(seed)
+func NewKeyFromSeed(seed Seed) (PrivateKey, error) {
+	privateKey := make([]byte, PrivateKeySize)
+	newKeyFromSeed(privateKey, seed)
+	return privateKey
+
+	/*
+		sk, pk, err := keyGenFromSeed(seed)
+		if err != nil {
+			return PrivateKey{}, PublicKey{}, err
+		}
+
+		return sk, pk, nil
+	*/
+}
+
+func newKeyFromSeed(privateKey, seed []byte) error {
+	k, err := newPrivateKeyFromSeed(seed)
 	if err != nil {
-		return PrivateKey{}, PublicKey{}, err
+		panic("")
 	}
-
-	return sk, pk, nil
+	copy(privateKey, k)
 }
+
+func newPrivateKeyFromSeed() {}
 
 func keyGenFromSeed(seed Seed) (PrivateKey, PublicKey, error) {
 	rng := sha3.NewShake256()
@@ -167,7 +203,7 @@ func encodePublicKey(dpk decodedPublicKey) (PublicKey, error) {
 	return pk, nil
 }
 
-func MakePublic(sk PrivateKey) (PublicKey, error) {
+func makePublic(sk PrivateKey) (PublicKey, error) {
 	if len(sk) != PrivateKeySize {
 		// TODO: return err
 	}
@@ -203,7 +239,11 @@ func MakePublic(sk PrivateKey) (PublicKey, error) {
 	return pk, nil
 }
 
-func signStart() ([nonceSize]byte, sha3.ShakeHash, error) {
+func signStart(random io.Reader) ([nonceSize]byte, sha3.ShakeHash, error) {
+	if random == nil {
+		random = rand.Reader
+	}
+
 	var nonce [nonceSize]byte
 	if _, err := io.ReadFull(rand.Reader, nonce[:]); err != nil {
 		return [nonceSize]byte{}, nil, err
@@ -221,63 +261,70 @@ func signDynFinish(
 	sk PrivateKey,
 	hashData sha3.ShakeHash,
 	nonce [nonceSize]byte,
-) ([]byte, error) {
-	return []byte{}, nil
+) (PaddedSignature, error) {
+	return PaddedSignature{}, nil
 }
 
 func decodePrivateKey(sk PrivateKey) (coeffPoly, coeffPoly, coeffPoly, error) {
 	return nil, nil, nil, nil
 }
 
-func ExpandPrivateKey(sk PrivateKey) (ExpandedPrivateKey, error) {
-	if len(sk) != PrivateKeySize {
-		// TODO: return err
-	}
-
+func expandPriv(sk PrivateKey) (*ExpandedPrivateKey, error) {
 	if sk[0] != privateKeyHeader {
-		return ExpandedPrivateKey{}, ErrExpandPrivKeyInvalidFormat
+		return &ExpandedPrivateKey{}, ErrExpandPrivKeyInvalidFormat
 	}
 
 	f, g, ntruF, err := decodePrivateKey(sk)
 	if err != nil {
-		return ExpandedPrivateKey{}, err
+		return &ExpandedPrivateKey{}, err
 	}
 
 	ntruG, err := completePrivate(f, g, ntruF, nil)
 	if err != nil {
-		return ExpandedPrivateKey{}, err
+		return &ExpandedPrivateKey{}, err
 	}
 
-	// expkey := expandPrivkey()
+	expkey := expandPrivateKey(f, g, ntruF, ntruG)
 
 	return expkey, nil
 }
 
 func signTreeFinish(
-	esk ExpandedPrivateKey,
+	esk *ExpandedPrivateKey,
 	hashData sha3.ShakeHash,
 	nonce [nonceSize]byte,
-) ([]byte, error) {
-	if len(sig) < 41 {
-		// TODO: return err
-	}
-
-	switch sigType {
-	case signaturePadded:
-	default:
-		// TODO: return err
-	}
-
-	return []byte{}, nil
-}
-
-func Sign(sk PrivateKey, msg []byte) (PaddedSignature, error) { // dynamic path
-	nonce, hashData, err := signStart()
+) (PaddedSignature, error) {
+	hm, err := hashToPointVartime(hashData)
 	if err != nil {
 		return PaddedSignature{}, nil
 	}
 
-	hashData.Write(msg)
+	sv, err := signTree(esk, hm)
+	if err != nil {
+		return PaddedSignature{}, err
+	}
+
+	sig := PaddedSignature{}
+	sig[0] = signaturePaddedHeader
+
+	_, err = compEncode(sig[signaturePrefixSize:], sv)
+	if err != nil {
+		return PaddedSignature{}, err
+	}
+
+	return sig, nil
+}
+
+func Sign(random io.Reader, sk PrivateKey, msg []byte) (PaddedSignature, error) { // dynamic path
+	nonce, hashData, err := signStart(random)
+	if err != nil {
+		return PaddedSignature{}, nil
+	}
+
+	_, err = hashData.Write(msg)
+	if err != nil {
+		return PaddedSignature{}, err
+	}
 
 	sig, err := signDynFinish(sk, hashData, nonce)
 	if err != nil {
@@ -287,20 +334,23 @@ func Sign(sk PrivateKey, msg []byte) (PaddedSignature, error) { // dynamic path
 	return PaddedSignature(sig), nil
 }
 
-func SignExpanded(esk ExpandedPrivateKey, msg []byte) (PaddedSignature, error) {
-	nonce, hashData, err := signStart()
+func SignExpanded(random io.Reader, esk *ExpandedPrivateKey, msg []byte) (PaddedSignature, error) {
+	nonce, hashData, err := signStart(random)
 	if err != nil {
 		return PaddedSignature{}, nil
 	}
 
-	hashData.Write(msg)
+	_, err = hashData.Write(msg)
+	if err != nil {
+		return PaddedSignature{}, err
+	}
 
 	sig, err := signTreeFinish(esk, hashData, nonce)
 	if err != nil {
 		return PaddedSignature{}, err
 	}
 
-	return PaddedSignature(sig), nil
+	return sig, nil
 }
 
 func decodePublicKey(pubkey PublicKey) (decodedPublicKey, error) {
@@ -340,6 +390,7 @@ func decodeSignature(sig []byte) (coeffPoly, error) {
 	return dsig, nil
 }
 
+// TODO: similar path to SignExpanded?
 func Verify(sig PaddedSignature, pk PublicKey, msg []byte) (bool, error) {
 	if pk[0] != publicKeyHeader {
 		return false, ErrInvalidPublicKeyFormat

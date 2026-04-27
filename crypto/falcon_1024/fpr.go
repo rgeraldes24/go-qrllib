@@ -528,6 +528,7 @@ func fprAdd(x, y fpr) fpr { return x + y }
 func fprSub(x, y fpr) fpr { return x - y }
 func fprMul(x, y fpr) fpr { return x * y }
 func fprNeg(x fpr) fpr    { return -x }
+func fprHalf(x fpr) fpr   { return x / 2 }
 func fprSqr(x fpr) fpr    { return x * x }
 func fprInv(x fpr) fpr    { return 1 / x }
 func fprLt(x, y fpr) bool { return x < y }
