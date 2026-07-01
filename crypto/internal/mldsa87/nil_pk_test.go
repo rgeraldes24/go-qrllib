@@ -8,7 +8,7 @@
 // from Open) and MUST NOT panic. A regression that removes the guard
 // would re-introduce the panic, which these tests would catch.
 
-package ml_dsa_87
+package mldsa87
 
 import (
 	"errors"

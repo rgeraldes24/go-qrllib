@@ -1,4 +1,4 @@
-package ml_dsa_87
+package mldsa87
 
 import (
 	"sync"
@@ -6,7 +6,7 @@ import (
 )
 
 // Thread safety tests for ML-DSA-87 (TST-006)
-// Run with: go test -race ./crypto/ml_dsa_87/...
+// Run with: go test -race ./crypto/mldsa87/...
 //
 // These tests verify that concurrent operations don't cause data races.
 

@@ -1,6 +1,6 @@
 //go:build acvp
 
-package ml_dsa_87
+package mldsa87
 
 import (
 	"bytes"

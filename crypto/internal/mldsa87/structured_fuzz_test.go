@@ -6,7 +6,7 @@
 //   - the `randomized bool` parameter was removed from
 //     `cryptoSignSignature` (hedged is now the default)
 
-package ml_dsa_87
+package mldsa87
 
 import (
 	"bytes"

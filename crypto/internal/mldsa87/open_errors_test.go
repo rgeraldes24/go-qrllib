@@ -14,7 +14,7 @@
 // silently returned nil under the old API, leaving the caller unable
 // to log meaningfully or route on specific failure types.
 
-package ml_dsa_87
+package mldsa87
 
 import (
 	"errors"

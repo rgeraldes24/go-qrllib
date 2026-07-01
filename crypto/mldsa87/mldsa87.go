@@ -1,4 +1,4 @@
-// Package ml_dsa_87 implements the ML-DSA-87 digital signature algorithm
+// Package mldsa87 implements the ML-DSA-87 digital signature algorithm
 // as specified in FIPS 204 (Module-Lattice-Based Digital Signature Standard).
 //
 // # API Difference: Context Parameter
@@ -17,13 +17,13 @@
 //   - SPHINCS+: pre-FIPS hash-based signature (context not part of spec)
 //   - XMSS: RFC 8391 hash-based signature (uses hash function selector instead)
 //
-// The wallet layer (wallet/ml_dsa_87) abstracts this by hardcoding the context,
+// The wallet layer (wallet/mldsa87) abstracts this by hardcoding the context,
 // providing a consistent Sign(message) API to callers.
 //
 // # Signing Mode (Hedged by Default)
 //
 // Public ML-DSA-87 signing — [MLDSA87.Sign], [MLDSA87.SignAttached],
-// the `wallet/ml_dsa_87` Sign wrapper, and the [crypto.Signer]-style
+// the `wallet/mldsa87` Sign wrapper, and the [crypto.Signer]-style
 // [CryptoSigner.Sign] — is **always hedged** per FIPS 204 §3.4 (the
 // recommended mode). Each call mixes fresh `crypto/rand` randomness
 // into the per-signature `RND_BYTES` value, so two calls with the
@@ -60,7 +60,7 @@
 // An MLDSA87 instance is safe for concurrent reads (GetPK, GetSK, GetSeed),
 // but Sign and SignAttached should not be called concurrently on the same instance.
 // The package-level Verify and Open functions are safe for concurrent use.
-package ml_dsa_87
+package mldsa87
 
 import (
 	"crypto/rand"

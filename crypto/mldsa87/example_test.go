@@ -1,15 +1,15 @@
-package ml_dsa_87_test
+package mldsa87_test
 
 import (
 	"fmt"
 
-	"github.com/theQRL/go-qrllib/crypto/ml_dsa_87"
+	"github.com/theQRL/go-qrllib/crypto/mldsa87"
 )
 
 // Example demonstrates basic ML-DSA-87 signature operations.
 func Example() {
 	// Create a new ML-DSA-87 instance with random seed
-	m, err := ml_dsa_87.New()
+	m, err := mldsa87.New()
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
@@ -27,7 +27,7 @@ func Example() {
 
 	// Verify the signature
 	pk := m.GetPK()
-	valid := ml_dsa_87.Verify(ctx, message, signature, &pk)
+	valid := mldsa87.Verify(ctx, message, signature, &pk)
 	fmt.Println("Signature valid:", valid)
 	// Output: Signature valid: true
 }
@@ -35,7 +35,7 @@ func Example() {
 // ExampleNew demonstrates creating an ML-DSA-87 instance.
 func ExampleNew() {
 	// Create with random seed
-	m, err := ml_dsa_87.New()
+	m, err := mldsa87.New()
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
@@ -49,10 +49,10 @@ func ExampleNew() {
 // ExampleNewMLDSA87FromSeed demonstrates deterministic key generation.
 func ExampleNewMLDSA87FromSeed() {
 	// Create from a specific seed for reproducible keys
-	var seed [ml_dsa_87.SEED_BYTES]uint8
+	var seed [mldsa87.SEED_BYTES]uint8
 	copy(seed[:], []byte("my-32-byte-seed-for-testing!"))
 
-	m, err := ml_dsa_87.NewMLDSA87FromSeed(seed)
+	m, err := mldsa87.NewMLDSA87FromSeed(seed)
 	if err != nil {
 		fmt.Println("Error:", err)
 		return
@@ -61,13 +61,13 @@ func ExampleNewMLDSA87FromSeed() {
 
 	// Same seed always produces same keys
 	pk := m.GetPK()
-	fmt.Println("Public key generated:", len(pk) == ml_dsa_87.CRYPTO_PUBLIC_KEY_BYTES)
+	fmt.Println("Public key generated:", len(pk) == mldsa87.CRYPTO_PUBLIC_KEY_BYTES)
 	// Output: Public key generated: true
 }
 
 // ExampleMLDSA87_Sign demonstrates signing with context.
 func ExampleMLDSA87_Sign() {
-	m, _ := ml_dsa_87.New()
+	m, _ := mldsa87.New()
 	defer m.Zeroize()
 
 	// FIPS 204 requires a context parameter for domain separation
@@ -87,7 +87,7 @@ func ExampleMLDSA87_Sign() {
 
 // ExampleVerify demonstrates signature verification with context.
 func ExampleVerify() {
-	m, _ := ml_dsa_87.New()
+	m, _ := mldsa87.New()
 	defer m.Zeroize()
 
 	ctx := []byte("test-context")
@@ -97,12 +97,12 @@ func ExampleVerify() {
 	pk := m.GetPK()
 
 	// Verify requires the same context used during signing
-	valid := ml_dsa_87.Verify(ctx, message, signature, &pk)
+	valid := mldsa87.Verify(ctx, message, signature, &pk)
 	fmt.Println("Valid signature:", valid)
 
 	// Wrong context fails verification
 	wrongCtx := []byte("wrong-context")
-	valid = ml_dsa_87.Verify(wrongCtx, message, signature, &pk)
+	valid = mldsa87.Verify(wrongCtx, message, signature, &pk)
 	fmt.Println("Wrong context:", valid)
 	// Output:
 	// Valid signature: true
@@ -115,7 +115,7 @@ func ExampleVerify() {
 // detached signature returned by Sign. There is no confidentiality —
 // the message bytes are embedded in the result in the clear.
 func ExampleMLDSA87_SignAttached() {
-	m, _ := ml_dsa_87.New()
+	m, _ := mldsa87.New()
 	defer m.Zeroize()
 
 	ctx := []byte("example-context")
@@ -129,14 +129,14 @@ func ExampleMLDSA87_SignAttached() {
 	}
 
 	fmt.Printf("Signed length: %d (signature: %d + message: %d)\n",
-		len(signed), ml_dsa_87.CRYPTO_BYTES, len(message))
+		len(signed), mldsa87.CRYPTO_BYTES, len(message))
 	// Output: Signed length: 4654 (signature: 4627 + message: 27)
 }
 
 // ExampleOpen demonstrates verifying an attached-signature byte string
 // (produced by SignAttached) and recovering the plaintext message.
 func ExampleOpen() {
-	m, _ := ml_dsa_87.New()
+	m, _ := mldsa87.New()
 	defer m.Zeroize()
 
 	ctx := []byte("open-context")
@@ -145,7 +145,7 @@ func ExampleOpen() {
 
 	// Open verifies and returns the recovered message
 	pk := m.GetPK()
-	message, err := ml_dsa_87.Open(ctx, signed, &pk)
+	message, err := mldsa87.Open(ctx, signed, &pk)
 	if err != nil {
 		fmt.Println("Verification failed:", err)
 		return

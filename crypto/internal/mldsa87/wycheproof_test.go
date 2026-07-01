@@ -1,6 +1,6 @@
 //go:build wycheproof
 
-package ml_dsa_87
+package mldsa87
 
 import (
 	"encoding/hex"

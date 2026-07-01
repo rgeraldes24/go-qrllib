@@ -6,7 +6,7 @@
 // keys, signatures, and secret-key regions — useful as a deep
 // invariant sweep but too slow for the default test path. Run with:
 //
-//	go test -tags metamorphic -timeout 30m ./crypto/ml_dsa_87/
+//	go test -tags metamorphic -timeout 30m ./crypto/mldsa87/
 //
 // Light adaptations applied for current go-qrllib API surface
 // (post TOB-6 / TOB-12 / TOB-14):
@@ -19,7 +19,7 @@
 //     `rnd = 0^32` so the comparisons remain meaningful under
 //     hedged-by-default signing.
 
-package ml_dsa_87
+package mldsa87
 
 import (
 	"bytes"

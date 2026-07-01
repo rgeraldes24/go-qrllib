@@ -9,7 +9,7 @@
 //     genuinely testing the metamorphic property rather than trivially
 //     observing per-call freshness.
 
-package ml_dsa_87
+package mldsa87
 
 import (
 	"bytes"

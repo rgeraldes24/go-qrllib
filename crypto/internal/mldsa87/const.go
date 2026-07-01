@@ -1,4 +1,4 @@
-package ml_dsa_87
+package mldsa87
 
 // ML-DSA-87 (FIPS 204) parameter set constants for security level 5 (≈256-bit post-quantum).
 //

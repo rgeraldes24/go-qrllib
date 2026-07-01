@@ -1,4 +1,4 @@
-package ml_dsa_87
+package mldsa87
 
 import "github.com/theQRL/go-qrllib/crypto/internal/lattice"
 

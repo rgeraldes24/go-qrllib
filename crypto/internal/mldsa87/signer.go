@@ -1,4 +1,4 @@
-package ml_dsa_87
+package mldsa87
 
 import (
 	"crypto"
@@ -7,7 +7,7 @@ import (
 	"io"
 )
 
-var errUnsupportedSignerOpts = errors.New("ml_dsa_87: opts must be *SignerOpts or nil")
+var errUnsupportedSignerOpts = errors.New("mldsa87: opts must be *SignerOpts or nil")
 
 // SignerOpts carries the FIPS 204 context for use with crypto.Signer.
 type SignerOpts struct {
